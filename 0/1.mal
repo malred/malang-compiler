@@ -1,0 +1,12 @@
+use 2
+let x = fn(x,y){
+    return x + y
+}
+puts(x)
+let y = fn(x,y){
+    return x - y
+}
+x(y(2,4),8);
+let shit = "hello world"
+len(shit)
+puts(1)
