@@ -33,6 +33,9 @@ const (
 	OpCall          // 调用函数
 	OpReturnValue   // 函数返回
 	OpReturn        // 函数没有返回值
+	OpFor           // for循环起始处
+	OpGetLocal      // 局部绑定get
+	OpSetLocal      // 局部绑定set
 )
 
 type Instructions []byte
@@ -69,9 +72,12 @@ var definitions = map[Opcode]*Definition{
 	OpArray:         {"OpArray", []int{2}},
 	OpHash:          {"OpHash", []int{2}},
 	OpIndex:         {"OpIndex", []int{}},
-	OpCall:          {"OpCall", []int{}},
+	OpCall:          {"OpCall", []int{1}},
 	OpReturnValue:   {"OpReturnValue", []int{}},
 	OpReturn:        {"OpReturn", []int{}},
+	OpFor:           {"OpFor", []int{}},
+	OpGetLocal:      {"OpGetLocal", []int{1}},
+	OpSetLocal:      {"OpSetLocal", []int{1}},
 }
 
 // 查看操作码定义
@@ -112,6 +118,8 @@ func Make(op Opcode, operands ...int) []byte {
 		case 2:
 			// 操作数大端编码为uint16到instruction
 			binary.BigEndian.PutUint16(instruction[offset:], uint16(o))
+		case 1:
+			instruction[offset] = byte(o)
 		}
 		// 向后移动，继续遍历操作数
 		offset += width
@@ -171,6 +179,8 @@ func ReadOperands(def *Definition, ins Instructions) ([]int, int) {
 		switch width {
 		case 2:
 			operands[i] = int(ReadUint16(ins[offset:]))
+		case 1:
+			operands[i] = int(ReadUint8(ins[offset:]))
 		}
 
 		offset += width
@@ -181,4 +191,8 @@ func ReadOperands(def *Definition, ins Instructions) ([]int, int) {
 
 func ReadUint16(ins Instructions) uint16 {
 	return binary.BigEndian.Uint16(ins)
+}
+
+func ReadUint8(ins Instructions) uint8 {
+	return uint8(ins[0])
 }
